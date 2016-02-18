@@ -444,8 +444,8 @@ int findInBuf(char* buf, int len, char* needle) {
     if (needle[needleMatchedPos] == buf[i]) {
       needleMatchedPos++;
       if (needle[needleMatchedPos] == '\0') {
-	// Entire needle was found
-	return 1; 
+		// Entire needle was found
+		return 1; 
       }      
     } else {
       needleMatchedPos=0;
@@ -482,7 +482,7 @@ int at_command(int fd, char *cmd, int to)
 		syslog(LOG_DEBUG, "Wrote  %s \n", cmd);
 
 	tcdrain(fd);
-	sleep(1);
+	// sleep(1);
 	//memset(buf, 0, sizeof(buf));
 	//len = read(fd, buf, sizeof(buf));
 
@@ -495,8 +495,8 @@ int at_command(int fd, char *cmd, int to)
 		timeout.tv_sec = 0;
 		timeout.tv_usec = to;
 
-		if ((sel = select(fd + 1, &rfds, NULL, NULL, &timeout)) > 0)
-		//if ((sel = select(fd + 1, &rfds, NULL, NULL, NULL)) > 0)
+		// if ((sel = select(fd + 1, &rfds, NULL, NULL, &timeout)) > 0)
+		if ((sel = select(fd + 1, &rfds, NULL, NULL, NULL)) > 0)
 		{
 
 			if (FD_ISSET(fd, &rfds))
@@ -658,6 +658,7 @@ int open_serialport(char *dev)
 
 	if(_debug)
 		syslog(LOG_DEBUG, "is in %s\n" , __FUNCTION__);
+	
 	fd = open(dev, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (fd != -1)
 	{
@@ -1299,18 +1300,19 @@ int initGeneric()
 		write_frame(0, close_mux, 2, UIH);
         at_command(serial_fd,"AT\r\n", 10000);
 	}
-        if (pin_code > 0 && pin_code < 10000) 
-        {
-            // Some modems, such as webbox, will sometimes hang if SIM code
-            // is given in virtual channel
-            char pin_command[20];
-            sprintf(pin_command, "AT+CPIN=%d\r\n", pin_code);
-            if (!at_command(serial_fd,pin_command, 20000))
-            {
-		if(_debug)
+	
+	if (pin_code > 0 && pin_code < 10000) 
+	{
+		// Some modems, such as webbox, will sometimes hang if SIM code
+		// is given in virtual channel
+		char pin_command[20];
+		sprintf(pin_command, "AT+CPIN=%d\r\n", pin_code);
+		if (!at_command(serial_fd,pin_command, 20000))
+		{
+			if(_debug)
 			syslog(LOG_DEBUG, "ERROR AT+CPIN %d\r\n", __LINE__);
-            }
-        }
+		}
+	}
 
 	if (!at_command(serial_fd, mux_command, 10000))
 	{
@@ -1376,7 +1378,7 @@ int openDevicesAndMuxMode() {
 
 	terminateCount = numOfPorts;
 	syslog(LOG_INFO, "Waiting for mux-mode.\n");
-	sleep(1);
+	// sleep(1);
 	syslog(LOG_INFO, "Opening control channel.\n");
 	write_frame(0, NULL, 0, SABM | PF);
 	syslog(LOG_INFO, "Opening logical channels.\n");
